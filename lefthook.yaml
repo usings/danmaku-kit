@@ -1,0 +1,20 @@
+#
+#   Refer for explanation to following link:
+#   https://lefthook.dev/configuration
+#
+skip_output:
+  - meta
+  - skips
+  - execution
+
+pre-commit:
+  commands:
+    lint commit codes:
+      glob: '*.{ts,tsx}'
+      run: pnpm eslint {staged_files} --fix
+      stage_fixed: true
+
+commit-msg:
+  commands:
+    lint commit message:
+      run: pnpm commitlint --edit {1}
