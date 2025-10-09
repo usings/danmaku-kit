@@ -1,0 +1,187 @@
+import type { DanmakuElem, DanmakuSegment } from '../protobufs/bilibili_pb'
+import type { Danmaku, DanmakuProvider, Series } from './types'
+import { fromBinary } from '@bufbuild/protobuf'
+import { ofetch } from 'ofetch'
+import { parallel } from 'radashi'
+import { DanmakuSegmentSchema } from '../protobufs/bilibili_pb'
+
+/**
+ * 🎬 Bilibili Danmaku Adapter
+ */
+export class Bilibili implements DanmakuProvider {
+  /** Source name identifier */
+  public readonly name = 'bilibili'
+  /** HTTP request headers to simulate browser and pass cookies */
+  private readonly headers: Headers
+  /** Maximum concurrency for requests */
+  private readonly concurrency = 3
+
+  constructor(cookie?: string) {
+    this.headers = new Headers({
+      cookie: cookie || 'enable_web_push=DISABLE; header_theme_version=CLOSE; enable_feed_channel=ENABLE; home_feed_column=5;',
+    })
+  }
+
+  /**
+   * Search Bangumi (anime/series) on Bilibili.
+   */
+  public async search(keyword: string): Promise<Series[]> {
+    const res = await ofetch<ResponseSearch>(
+      `https://api.bilibili.com/x/web-interface/search/type?search_type=media_bangumi&keyword=${encodeURIComponent(keyword)}`,
+      { headers: this.headers },
+    )
+    const results = res.data?.result ?? []
+
+    if (results.length === 0) {
+      return []
+    }
+
+    return results
+      .sort((a, b) => {
+        const aPubtime = a.pubtime || 0
+        const bPubtime = b.pubtime || 0
+
+        if (aPubtime === 0 && bPubtime !== 0) {
+          return -1
+        } else if (bPubtime === 0 && aPubtime !== 0) {
+          return 1
+        }
+        return bPubtime - aPubtime
+      })
+      .map(item => ({
+        id: String(item.season_id || item.media_id),
+        title: item.title.replaceAll(/<[^>]+>/g, ''),
+        source: this.name,
+        episodes: item.eps?.map(ep => ({
+          id: String(ep.id),
+          title: ep.long_title || ep.title,
+          index: ep.index_title,
+        })) ?? [],
+      }))
+  }
+
+  /**
+   * Fetch danmaku (comments) for a specific Bilibili episode.
+   */
+  public async fetchDanmaku(episodeId: string): Promise<Danmaku[]> {
+    const { cid, duration } = await this.fetchEpisodeInfo(episodeId)
+    const buffers = await parallel(
+      this.concurrency,
+      Array.from({ length: Math.floor(duration / 1000 / 360) + 1 }, (_, i) => i + 1),
+      async (val) => {
+        try {
+          return await ofetch(
+            `https://api.bilibili.com/x/v2/dm/web/seg.so?type=1&oid=${cid}&segment_index=${val}`,
+            {
+              responseType: 'arrayBuffer',
+              headers: {
+                ...this.headers,
+                referer: `https://www.bilibili.com/bangumi/play/ep${episodeId}`,
+              },
+            },
+          )
+        } catch (error) {
+          console.warn(`[Bilibili] Failed segment ${val}:`, error)
+          return
+        }
+      },
+    )
+
+    return buffers
+      .filter((b): b is ArrayBuffer => !!b)
+      .flatMap((buffer) => {
+        const danmakuElems = this.parseDanmakuProtobuf(buffer).elems.filter(d => d.content)
+        return danmakuElems.map(d => ({
+          text: d.content,
+          meta: this.formatDanmakuMeta(d),
+        }))
+      })
+  }
+
+  /**
+   * Fetch episode CID and duration from Bilibili's season API.
+   * @private
+   */
+  private async fetchEpisodeInfo(episodeId: string): Promise<{ cid: string, duration: number }> {
+    const res = await ofetch<ResponseSeries>(
+      `https://api.bilibili.com/pgc/view/web/season?ep_id=${episodeId}`,
+      { headers: this.headers },
+    )
+    const episode = res.result?.episodes?.find(e => e.id === Number(episodeId))
+
+    if (!episode?.cid || !episode.duration) {
+      throw new Error(`[Bilibili] Failed to fetch series details for ep_id=${episodeId}`)
+    }
+
+    return {
+      cid: String(episode.cid),
+      duration: episode.duration,
+    }
+  }
+
+  /**
+   * Parse Protobuf binary data of Bilibili danmaku.
+   * @private
+   */
+  private parseDanmakuProtobuf(buffer: ArrayBuffer): DanmakuSegment {
+    return fromBinary(DanmakuSegmentSchema, new Uint8Array(buffer))
+  }
+
+  /**
+   * Format danmaku (bullet comment) metadata into a CSV-style string.
+   * @private
+   */
+  private formatDanmakuMeta(danmaku: DanmakuElem): string {
+    function mapPosition(mode: number): number {
+      switch (mode) {
+        case 4: {
+          return 4
+        }
+        case 5: {
+          return 5
+        }
+        default: {
+          return 1
+        }
+      }
+    }
+
+    return [
+      (danmaku.progress / 1000).toFixed(3),
+      mapPosition(danmaku.mode),
+      danmaku.color,
+      danmaku.midHash,
+      danmaku.id,
+    ].join(',')
+  }
+}
+
+// =============== Types ===============
+
+interface ResponseSearch {
+  data?: {
+    result?: {
+      title: string
+      season_id: number
+      media_id: number
+      pubtime: number
+      eps: {
+        id: number
+        cover: string
+        title: string
+        index_title: string
+        long_title: string
+      }[]
+    }[]
+  }
+}
+
+interface ResponseSeries {
+  result?: {
+    episodes?: {
+      id: number
+      cid: number
+      duration: number
+    }[]
+  }
+}
