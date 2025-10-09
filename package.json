@@ -8,7 +8,9 @@
   },
   "scripts": {
     "prepare": "lefthook install",
-    "release": "lerna version"
+    "release": "lerna version",
+    "cloudflare:dev": "wrangler dev",
+    "cloudflare:deploy": "wrangler deploy --minify"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.1.0",
@@ -20,6 +22,7 @@
     "eslint": "^9.37.0",
     "lefthook": "^1.13.6",
     "tsdown": "^0.15.6",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "wrangler": "^4.42.1"
   }
 }

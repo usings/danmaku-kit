@@ -4,10 +4,16 @@
     "dist"
   ],
   "words": [
+    "bangumi",
     "changelogithub",
     "commitlint",
+    "danmaku",
+    "elems",
     "esbuild",
     "lefthook",
+    "ofetch",
+    "protoc",
+    "radashi",
     "unrs",
     "witheslint"
   ]

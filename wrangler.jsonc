@@ -1,0 +1,6 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "danmaku-api",
+  "main": "api/src/index.ts",
+  "compatibility_date": "2025-10-10"
+}

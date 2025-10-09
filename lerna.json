@@ -3,12 +3,12 @@
   "version": "0.0.0",
   "npmClient": "pnpm",
   "packages": [
-    "packages/*"
+    "api"
   ],
   "command": {
     "version": {
       "changelog": false,
-      "conventionalCommits": true,
+      "conventionalCommits": false,
       "syncWorkspaceLock": true,
       "forcePublish": true,
       "tagVersionPrefix": "v",
