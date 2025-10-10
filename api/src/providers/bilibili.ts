@@ -23,7 +23,7 @@ export class Bilibili implements DanmakuProvider {
   }
 
   /**
-   * Search Bangumi (anime/series) on Bilibili.
+   * Search anime on Bilibili.
    */
   public async search(keyword: string): Promise<MediaEntry[]> {
     const res = await ofetch<ResponseSearch>(
@@ -36,28 +36,16 @@ export class Bilibili implements DanmakuProvider {
       return []
     }
 
-    return results
-      .sort((a, b) => {
-        const aPubtime = a.pubtime || 0
-        const bPubtime = b.pubtime || 0
-
-        if (aPubtime === 0 && bPubtime !== 0) {
-          return -1
-        } else if (bPubtime === 0 && aPubtime !== 0) {
-          return 1
-        }
-        return bPubtime - aPubtime
-      })
-      .map(item => ({
-        id: String(item.season_id || item.media_id),
-        title: item.title.replaceAll(/<[^>]+>/g, ''),
-        provider: this.name,
-        episodes: item.eps?.map(ep => ({
-          id: String(ep.id),
-          title: ep.long_title || ep.title,
-          index: ep.index_title,
-        })) ?? [],
-      }))
+    return results.map(item => ({
+      id: String(item.season_id || item.media_id),
+      title: item.title.replaceAll(/<[^>]+>/g, ''),
+      provider: this.name,
+      episodes: item.eps?.map(ep => ({
+        id: String(ep.id),
+        title: ep.long_title || ep.title,
+        index: ep.index_title,
+      })) ?? [],
+    }))
   }
 
   /**
