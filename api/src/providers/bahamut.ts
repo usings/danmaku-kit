@@ -1,0 +1,152 @@
+import type { Danmaku, DanmakuProvider, Series } from './types'
+import { ofetch } from 'ofetch'
+import { parallel } from 'radashi'
+
+/**
+ * 🎬 Bahamut (巴哈姆特動畫瘋) Danmaku Adapter
+ */
+export class Bahamut implements DanmakuProvider {
+  /** Source name identifier */
+  public readonly name = 'bahamut'
+  /** HTTP request headers to simulate browser and pass cookies */
+  private readonly headers: Headers
+  /** Maximum concurrency for requests */
+  private readonly concurrency = 3
+
+  constructor() {
+    this.headers = new Headers({
+      userAgent: 'Anime/2.29.2 (tw.com.gamer.anime; build:999; iOS 26.0.0)',
+    })
+  }
+
+  /**
+   * Search Anime on Bahamut Ani-Gamer.
+   */
+  public async search(keyword: string): Promise<Series[]> {
+    const searchResponse = await ofetch<ResponseSearch>(
+      `https://api.gamer.com.tw/mobile_app/anime/v1/search.php?kw=${encodeURIComponent(keyword)}`,
+      { headers: this.headers },
+    )
+    const searchResults = searchResponse.anime ?? []
+
+    if (searchResults.length === 0) {
+      return []
+    }
+
+    const seriesDetails = await parallel(this.concurrency, searchResults, async (item) => {
+      try {
+        return await ofetch<ResponseSeries>(
+          `https://api.gamer.com.tw/anime/v1/video.php?videoSn=${item.video_sn}`,
+          { headers: this.headers },
+        )
+      } catch (error) {
+        console.error(`[Bahamut] Failed to fetch series details for video_sn=${item.video_sn}:`, error)
+        return
+      }
+    })
+
+    function extractEpisodes(detail: ResponseSeries | undefined) {
+      if (!detail) return
+      return Object.values(detail.data?.anime?.episodes[detail.data.anime.episodeIndex] || {})
+    }
+
+    return searchResults.map((item, index) => ({
+      id: String(item.video_sn),
+      title: item.title,
+      source: this.name,
+      episodes: extractEpisodes(seriesDetails[index])?.map(ep => ({
+        id: String(ep.videoSn),
+        title: `第 ${ep.episode} 集`,
+        index: String(ep.episode),
+      })),
+    }))
+  }
+
+  /**
+   * Fetch danmaku (comments) for a specific Bahamut episode.
+   */
+  public async fetchDanmaku(episodeId: string): Promise<Danmaku[]> {
+    const res = await ofetch<ResponseDanmaku>(
+      `https://api.gamer.com.tw/anime/v1/danmu.php?geo=TW%2CHK&videoSn=${episodeId}`,
+      { headers: this.headers },
+    )
+    const danmaku = res.data?.danmu ?? []
+
+    if (danmaku.length === 0) {
+      return []
+    }
+
+    return danmaku.map(d => ({
+      text: d.text,
+      meta: this.formatDanmakuMeta(d),
+    }))
+  }
+
+  /**
+   * Format danmaku (bullet comment) metadata into a CSV-style string.
+   * @private
+   */
+  private formatDanmakuMeta(danmaku: BahamutDanmaku): string {
+    function mapPosition(pos: number): number {
+      switch (pos) {
+        case 1: {
+          return 5
+        }
+        case 2: {
+          return 4
+        }
+        default: {
+          return 1
+        }
+      }
+    }
+
+    return [
+      danmaku.time.toFixed(3),
+      mapPosition(danmaku.position),
+      Number.parseInt(danmaku.color.slice(1), 16),
+      danmaku.userid,
+      danmaku.sn,
+    ].join(',')
+  }
+}
+
+// =============== Types ===============
+
+interface ResponseSearch {
+  anime?: {
+    anime_sn: number
+    video_sn: number
+    title: string
+    cover: string
+    info: string
+  }[]
+}
+
+interface ResponseSeries {
+  data?: {
+    anime?: {
+      episodeIndex: number
+      episodes: Record<string, {
+        episode: number
+        videoSn: number
+      }[]>
+    }
+  }
+}
+
+interface BahamutDanmaku {
+  text: string
+  color: string
+  size: number
+  position: number
+  time: number
+  sn: number
+  userid: string
+}
+
+interface ResponseDanmaku {
+  data?: {
+    danmu?: BahamutDanmaku[]
+  }
+}
