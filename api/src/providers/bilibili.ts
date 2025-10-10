@@ -1,12 +1,12 @@
 import type { DanmakuElem, DanmakuSegment } from '../protobufs/bilibili_pb'
-import type { Danmaku, DanmakuProvider, Series } from './types'
+import type { Danmaku, DanmakuProvider, MediaEntry } from './types'
 import { fromBinary } from '@bufbuild/protobuf'
 import { ofetch } from 'ofetch'
 import { parallel } from 'radashi'
 import { DanmakuSegmentSchema } from '../protobufs/bilibili_pb'
 
 /**
- * 🎬 Bilibili Danmaku Adapter
+ * 🎬 Bilibili (哔哩哔哩) Danmaku Provider
  */
 export class Bilibili implements DanmakuProvider {
   /** Source name identifier */
@@ -25,7 +25,7 @@ export class Bilibili implements DanmakuProvider {
   /**
    * Search Bangumi (anime/series) on Bilibili.
    */
-  public async search(keyword: string): Promise<Series[]> {
+  public async search(keyword: string): Promise<MediaEntry[]> {
     const res = await ofetch<ResponseSearch>(
       `https://api.bilibili.com/x/web-interface/search/type?search_type=media_bangumi&keyword=${encodeURIComponent(keyword)}`,
       { headers: this.headers },
@@ -51,7 +51,7 @@ export class Bilibili implements DanmakuProvider {
       .map(item => ({
         id: String(item.season_id || item.media_id),
         title: item.title.replaceAll(/<[^>]+>/g, ''),
-        source: this.name,
+        provider: this.name,
         episodes: item.eps?.map(ep => ({
           id: String(ep.id),
           title: ep.long_title || ep.title,

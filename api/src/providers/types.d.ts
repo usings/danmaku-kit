@@ -27,7 +27,7 @@ export interface DanmakuProvider {
    * console.log(results[0].title) // "SPY×FAMILY 间谍过家家"
    * ```
    */
-  search: (keyword: string) => Promise<Series[]>
+  search: (keyword: string) => Promise<MediaEntry[]>
 
   /**
    * Fetches danmaku (bullet comments) associated with a specific episode or video ID.
@@ -70,63 +70,69 @@ export interface Danmaku {
 }
 
 /**
- * Represents a single episode or part of a multi-episode series.
+ * Represents a unified media entry returned from a provider search result,
+ * such as an anime series, TV show, or movie.
+ *
+ * Each entry corresponds to a piece of content on a specific video platform
+ * (e.g., Bilibili, Bahamut) and may include one or more episodes.
  */
-export interface Episode {
+export interface MediaEntry {
   /**
-   * The globally unique identifier for the episode within the platform.
-   * This is typically used to fetch metadata or danmaku.
-   *
-   * @example "785548"
-   */
-  id: string
-
-  /**
-   * The display title of the episode, suitable for user-facing UIs.
-   *
-   * @example "第二集 我们家的安妮亚"
-   */
-  title: string
-
-  /**
-   * A short label or index for the episode.
-   * Often used to distinguish episode order.
-   *
-   * @example "EP02"
-   */
-  index: string
-}
-
-/**
- * Represents a video series, season, or standalone video
- * containing one or more episodes.
- */
-export interface Series {
-  /**
-   * The key or identifier of the provider (e.g., "bilibili", "acfun").
-   * Used to associate this series with its source adapter.
+   * The provider key identifying the video platform or adapter
+   * that supplies this media entry.
    *
    * @example "bilibili"
    */
-  source: string
+  provider: string
 
   /**
-   * The unique series identifier on the platform.
-   * Could map to fields like `season_id` or `media_id`.
+   * The unique identifier of this media entry on the provider platform.
    *
    * @example "12345"
    */
   id: string
 
   /**
-   * The display title of the series or movie.
+   * The display title of the media content.
    *
    * @example "SPY×FAMILY 间谍过家家"
    */
   title: string
 
   /**
-   * Optional list of episodes, if the series consists of multiple parts.
+   * Optional list of episodes if the media entry consists of multiple parts.
+   * For movies or standalone content, this may be omitted.
    */
   episodes?: Episode[]
+}
+
+/**
+ * Represents a single episode or segment belonging to a media entry,
+ * such as one part of a TV series, anime, or other multi-episode content.
+ *
+ * Each episode corresponds to a playable unit on a specific provider platform.
+ */
+interface Episode {
+  /**
+   * The unique identifier of this episode on the provider platform.
+   * Typically used to fetch metadata or danmaku (comments).
+   *
+   * @example "785548"
+   */
+  id: string
+
+  /**
+   * The display title of the episode, suitable for user-facing interfaces.
+   *
+   * @example "第二集 我们家的安妮亚"
+   */
+  title: string
+
+  /**
+   * A short label or index indicating the episode's position within the series.
+   * Common formats include numeric or prefixed values like "EP01", "S1E02", etc.
+   *
+   * @example "EP02"
+   */
+  index: string
 }
