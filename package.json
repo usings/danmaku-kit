@@ -1,5 +1,5 @@
 {
-  "name": "root",
+  "name": "@danmaku-kit/monorepo",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.18.1",
