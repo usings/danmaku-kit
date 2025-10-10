@@ -102,11 +102,10 @@ export class Bahamut implements DanmakuProvider {
     }
 
     return [
-      danmaku.time.toFixed(3),
+      danmaku.time.toFixed(2),
       mapPosition(danmaku.position),
       Number.parseInt(danmaku.color.slice(1), 16),
       danmaku.userid,
-      danmaku.sn,
     ].join(',')
   }
 }

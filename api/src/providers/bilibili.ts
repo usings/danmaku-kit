@@ -147,10 +147,9 @@ export class Bilibili implements DanmakuProvider {
     }
 
     return [
-      (danmaku.progress / 1000).toFixed(3),
+      (danmaku.progress / 1000).toFixed(2),
       mapPosition(danmaku.mode),
       danmaku.color,
-      danmaku.midHash,
       danmaku.id,
     ].join(',')
   }
