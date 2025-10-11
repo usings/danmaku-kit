@@ -8,6 +8,8 @@ import { parallel } from 'radashi'
 export class Bahamut implements DanmakuProvider {
   /** Source name identifier */
   public readonly name = 'bahamut'
+  /** Categories this provider belongs to */
+  public readonly categories = ['anime'] as const
   /** HTTP request headers to simulate browser and pass cookies */
   private readonly headers: Headers
   /** Maximum concurrency for requests */
@@ -20,7 +22,7 @@ export class Bahamut implements DanmakuProvider {
   }
 
   /**
-   * Search Anime on Bahamut Ani-Gamer.
+   * Search anime on Bahamut Ani-Gamer.
    */
   public async search(keyword: string): Promise<MediaEntry[]> {
     const searchResponse = await ofetch<ResponseSearch>(
@@ -66,11 +68,11 @@ export class Bahamut implements DanmakuProvider {
    * Fetch danmaku (comments) for a specific Bahamut episode.
    */
   public async fetchDanmaku(episodeId: string): Promise<Danmaku[]> {
-    const res = await ofetch<ResponseDanmaku>(
+    const response = await ofetch<ResponseDanmaku>(
       `https://api.gamer.com.tw/anime/v1/danmu.php?geo=TW%2CHK&videoSn=${episodeId}`,
       { headers: this.headers },
     )
-    const danmaku = res.data?.danmu ?? []
+    const danmaku = response.data?.danmu ?? []
 
     if (danmaku.length === 0) {
       return []

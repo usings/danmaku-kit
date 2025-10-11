@@ -18,6 +18,14 @@ export interface DanmakuProvider {
   name: string
 
   /**
+   * Categories this provider belongs to.
+   * Multiple categories can be assigned when the platform covers more than one type.
+   *
+   * @example ["anime"]
+   */
+  categories: readonly DanmakuCategory[]
+
+  /**
    * Performs a keyword-based search for series or videos
    * available on this platform.
    *
@@ -43,6 +51,16 @@ export interface DanmakuProvider {
    */
   fetchDanmaku: (episodeId: string) => Promise<Danmaku[]>
 }
+
+/**
+ * Represents the general category of danmaku content sources.
+ *
+ * - `"anime"` — Platforms or providers primarily focused on animation series,
+ *   such as Bilibili, Bangumi, or Muse Asia.
+ * - `"media"` — Broader media platforms that include TV dramas, movies,
+ *   and other non-anime audiovisual content.
+ */
+export type DanmakuCategory = 'anime' | 'media'
 
 /**
  * Represents a single danmaku (on-screen comment) item displayed

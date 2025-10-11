@@ -9,7 +9,16 @@ api
   .use(logger())
   .use(timeout(60 * 1000))
 
-api.get('/search', async (c) => {
+api.get('/search/:category', async (c) => {
+  const category = c.req.param('category')
+  const filteredProviders = providers.filter(provider => provider.categories.includes(category as any))
+  if (filteredProviders.length === 0) {
+    return c.json({
+      success: false,
+      message: `No providers found for category "${category}"`,
+    }, 404)
+  }
+
   const keyword = c.req.query('keyword')
   if (!keyword) {
     return c.json({
@@ -19,11 +28,11 @@ api.get('/search', async (c) => {
   }
 
   const results = await Promise.all(
-    providers.map(async (provider) => {
+    filteredProviders.map(async (provider) => {
       try {
         return await provider.search(keyword)
       } catch (error) {
-        console.error(`[${provider.name}] failed:`, error)
+        console.error(`[${provider.name}] search failed:`, error)
         return []
       }
     }),

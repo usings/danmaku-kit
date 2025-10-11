@@ -11,6 +11,8 @@ import { DanmakuSegmentSchema } from '../protobufs/bilibili_pb'
 export class Bilibili implements DanmakuProvider {
   /** Source name identifier */
   public readonly name = 'bilibili'
+  /** Categories this provider belongs to */
+  public readonly categories = ['anime'] as const
   /** HTTP request headers to simulate browser and pass cookies */
   private readonly headers: Headers
   /** Maximum concurrency for requests */
@@ -26,11 +28,11 @@ export class Bilibili implements DanmakuProvider {
    * Search anime on Bilibili.
    */
   public async search(keyword: string): Promise<MediaEntry[]> {
-    const res = await ofetch<ResponseSearch>(
+    const response = await ofetch<ResponseSearch>(
       `https://api.bilibili.com/x/web-interface/search/type?search_type=media_bangumi&keyword=${encodeURIComponent(keyword)}`,
       { headers: this.headers },
     )
-    const results = res.data?.result ?? []
+    const results = response.data?.result ?? []
 
     if (results.length === 0) {
       return []
@@ -76,14 +78,14 @@ export class Bilibili implements DanmakuProvider {
     )
 
     return buffers
-      .filter((b): b is ArrayBuffer => !!b)
-      .flatMap((buffer) => {
-        const danmakuElems = this.parseDanmakuProtobuf(buffer).elems.filter(d => d.content)
-        return danmakuElems.map(d => ({
-          text: d.content,
-          meta: this.formatDanmakuMeta(d),
-        }))
-      })
+      .filter((buffer): buffer is ArrayBuffer => !!buffer)
+      .flatMap(buffer => this.parseDanmakuProtobuf(buffer)
+        .elems
+        .filter(elem => elem.content)
+        .map(elem => ({
+          text: elem.content,
+          meta: this.formatDanmakuMeta(elem),
+        })))
   }
 
   /**
@@ -91,11 +93,11 @@ export class Bilibili implements DanmakuProvider {
    * @private
    */
   private async fetchEpisodeInfo(episodeId: string): Promise<{ cid: string, duration: number }> {
-    const res = await ofetch<ResponseSeries>(
+    const response = await ofetch<ResponseSeries>(
       `https://api.bilibili.com/pgc/view/web/season?ep_id=${episodeId}`,
       { headers: this.headers },
     )
-    const episode = res.result?.episodes?.find(e => e.id === Number(episodeId))
+    const episode = response.result?.episodes?.find(e => e.id === Number(episodeId))
 
     if (!episode?.cid || !episode.duration) {
       throw new Error(`[Bilibili] Failed to fetch series details for ep_id=${episodeId}`)
