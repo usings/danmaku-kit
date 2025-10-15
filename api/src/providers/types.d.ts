@@ -104,13 +104,6 @@ export interface MediaEntry {
   provider: string
 
   /**
-   * The unique identifier of this media entry on the provider platform.
-   *
-   * @example "12345"
-   */
-  id: string
-
-  /**
    * The display title of the media content.
    *
    * @example "SPY×FAMILY 间谍过家家"
@@ -118,10 +111,9 @@ export interface MediaEntry {
   title: string
 
   /**
-   * Optional list of episodes if the media entry consists of multiple parts.
-   * For movies or standalone content, this may be omitted.
+   * List of episodes if the media entry consists of multiple parts.
    */
-  episodes?: Episode[]
+  episodes: Episode[]
 }
 
 /**

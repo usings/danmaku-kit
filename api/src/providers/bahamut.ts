@@ -47,20 +47,20 @@ export class Bahamut implements DanmakuProvider {
       }
     })
 
-    function extractEpisodes(detail: ResponseSeries | undefined) {
-      if (!detail) return
-      return Object.values(detail.data?.anime?.episodes[detail.data.anime.episodeIndex] || {})
+    function extractEpisodes(detail?: ResponseSeries) {
+      const { anime, video } = detail?.data ?? {}
+      const key = video?.type ?? anime?.episodeIndex
+      return Object.values(anime?.episodes?.[key ?? ''] ?? {})
     }
 
     return searchResults.map((item, index) => ({
-      id: String(item.video_sn),
       title: item.title,
       provider: this.name,
       episodes: extractEpisodes(seriesDetails[index])?.map(ep => ({
         id: String(ep.videoSn),
         title: `第 ${ep.episode} 集`,
         index: String(ep.episode),
-      })),
+      })) ?? [],
     }))
   }
 
@@ -126,7 +126,12 @@ interface ResponseSearch {
 
 interface ResponseSeries {
   data?: {
+    video?: {
+      type: number
+    }
     anime?: {
+      title: string
+      totalEpisode: number
       episodeIndex: number
       episodes: Record<string, {
         episode: number

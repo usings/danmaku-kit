@@ -39,7 +39,6 @@ export class Bilibili implements DanmakuProvider {
     }
 
     return results.map(item => ({
-      id: String(item.season_id),
       title: item.title.replaceAll(/<[^>]+>/g, ''),
       provider: this.name,
       episodes: item.eps?.map(ep => ({
