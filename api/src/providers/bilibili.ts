@@ -1,5 +1,5 @@
 import type { DanmakuElem, DanmakuSegment } from '../protobufs/bilibili_pb'
-import type { Danmaku, DanmakuProvider, MediaEntry } from './types'
+import type { Danmaku, DanmakuProvider, UnifiedMedia } from './types'
 import { fromBinary } from '@bufbuild/protobuf'
 import { ofetch } from 'ofetch'
 import { parallel } from 'radashi'
@@ -27,7 +27,7 @@ export class Bilibili implements DanmakuProvider {
   /**
    * Search anime on Bilibili.
    */
-  public async search(keyword: string): Promise<MediaEntry[]> {
+  public async search(keyword: string): Promise<UnifiedMedia[]> {
     const response = await ofetch<ResponseSearch>(
       `https://api.bilibili.com/x/web-interface/search/type?search_type=media_bangumi&keyword=${encodeURIComponent(keyword)}`,
       { headers: this.headers },
@@ -44,7 +44,7 @@ export class Bilibili implements DanmakuProvider {
       episodes: item.eps?.map(ep => ({
         id: String(ep.id),
         title: ep.long_title || ep.title,
-        index: ep.index_title,
+        ordinal: ep.index_title,
       })) ?? [],
     }))
   }
@@ -121,8 +121,8 @@ export class Bilibili implements DanmakuProvider {
    * @private
    */
   private formatDanmakuMeta(danmaku: DanmakuElem): string {
-    function mapPosition(mode: number): number {
-      switch (mode) {
+    function mapPosition(pos: number): number {
+      switch (pos) {
         case 4: {
           return 4
         }
@@ -137,7 +137,7 @@ export class Bilibili implements DanmakuProvider {
 
     return [
       (danmaku.progress / 1000).toFixed(2),
-      mapPosition(danmaku.mode),
+      mapPosition(danmaku.position),
       danmaku.color,
       danmaku.id,
     ].join(',')

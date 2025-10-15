@@ -1,4 +1,4 @@
-import type { Danmaku, DanmakuProvider, MediaEntry } from './types'
+import type { Danmaku, DanmakuProvider, UnifiedMedia } from './types'
 import { ofetch } from 'ofetch'
 import { parallel } from 'radashi'
 
@@ -24,7 +24,7 @@ export class Bahamut implements DanmakuProvider {
   /**
    * Search anime on Bahamut Ani-Gamer.
    */
-  public async search(keyword: string): Promise<MediaEntry[]> {
+  public async search(keyword: string): Promise<UnifiedMedia[]> {
     const searchResponse = await ofetch<ResponseSearch>(
       `https://api.gamer.com.tw/mobile_app/anime/v1/search.php?kw=${encodeURIComponent(keyword)}`,
       { headers: this.headers },
@@ -59,7 +59,7 @@ export class Bahamut implements DanmakuProvider {
       episodes: extractEpisodes(seriesDetails[index])?.map(ep => ({
         id: String(ep.videoSn),
         title: `第 ${ep.episode} 集`,
-        index: String(ep.episode),
+        ordinal: ep.episode,
       })) ?? [],
     }))
   }

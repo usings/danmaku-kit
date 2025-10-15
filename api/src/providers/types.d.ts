@@ -35,7 +35,7 @@ export interface DanmakuProvider {
    * console.log(results[0].title) // "SPY×FAMILY 间谍过家家"
    * ```
    */
-  search: (keyword: string) => Promise<MediaEntry[]>
+  search: (keyword: string) => Promise<UnifiedMedia[]>
 
   /**
    * Fetches danmaku (bullet comments) associated with a specific episode or video ID.
@@ -79,7 +79,7 @@ export interface Danmaku {
    *
    * The format is:
    * ```
-   * <time_in_seconds>,<mode>,<color>,<user_id>
+   * <time_in_seconds>,<position>,<color>,<user_id>
    * ```
    *
    * @example "25.20,1,16777215,1594722654"
@@ -88,36 +88,35 @@ export interface Danmaku {
 }
 
 /**
- * Represents a unified media entry returned from a provider search result,
+ * Represents a unified media work returned from a provider search result,
  * such as an anime series, TV show, or movie.
  *
  * Each entry corresponds to a piece of content on a specific video platform
  * (e.g., Bilibili, Bahamut) and may include one or more episodes.
  */
-export interface MediaEntry {
+export interface UnifiedMedia {
   /**
-   * The provider key identifying the video platform or adapter
-   * that supplies this media entry.
+   * The key identifying the provider or platform that supplies this media.
    *
    * @example "bilibili"
    */
   provider: string
 
   /**
-   * The display title of the media content.
+   * The display name of the media work, as shown on the provider platform.
    *
    * @example "SPY×FAMILY 间谍过家家"
    */
   title: string
 
   /**
-   * List of episodes if the media entry consists of multiple parts.
+   * List of episodes if the media work consists of multiple parts.
    */
   episodes: Episode[]
 }
 
 /**
- * Represents a single episode or segment belonging to a media entry,
+ * Represents a single episode or segment belonging to a media work,
  * such as one part of a TV series, anime, or other multi-episode content.
  *
  * Each episode corresponds to a playable unit on a specific provider platform.
@@ -132,17 +131,16 @@ interface Episode {
   id: string
 
   /**
-   * The display title of the episode, suitable for user-facing interfaces.
+   * The display name of the episode.
    *
    * @example "第二集 我们家的安妮亚"
    */
   title: string
 
   /**
-   * A short label or index indicating the episode's position within the series.
-   * Common formats include numeric or prefixed values like "EP01", "S1E02", etc.
+   * The numeric ordinal of this episode within its series or season.
    *
-   * @example "EP02"
+   * @example 2
    */
-  index: string
+  ordinal: string | number
 }

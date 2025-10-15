@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file bilibili.proto.
  */
 export const file_bilibili: GenFile = /*@__PURE__*/
-  fileDesc("Cg5iaWxpYmlsaS5wcm90byItCg5EYW5tYWt1U2VnbWVudBIbCgVlbGVtcxgBIAMoCzIMLkRhbm1ha3VFbGVtItgBCgtEYW5tYWt1RWxlbRIKCgJpZBgBIAEoAxIQCghwcm9ncmVzcxgCIAEoBRIMCgRtb2RlGAMgASgFEhAKCGZvbnRzaXplGAQgASgFEg0KBWNvbG9yGAUgASgNEhAKCG1pZF9oYXNoGAYgASgJEg8KB2NvbnRlbnQYByABKAkSDQoFY3RpbWUYCCABKAMSDgoGd2VpZ2h0GAkgASgFEg4KBmFjdGlvbhgKIAEoCRIMCgRwb29sGAsgASgFEg4KBmlkX3N0chgMIAEoCRIMCgRhdHRyGA0gASgFYgZwcm90bzM");
+  fileDesc("Cg5iaWxpYmlsaS5wcm90byItCg5EYW5tYWt1U2VnbWVudBIbCgVlbGVtcxgBIAMoCzIMLkRhbm1ha3VFbGVtItwBCgtEYW5tYWt1RWxlbRIKCgJpZBgBIAEoAxIQCghwcm9ncmVzcxgCIAEoBRIQCghwb3NpdGlvbhgDIAEoBRIQCghmb250c2l6ZRgEIAEoBRINCgVjb2xvchgFIAEoDRIQCghtaWRfaGFzaBgGIAEoCRIPCgdjb250ZW50GAcgASgJEg0KBWN0aW1lGAggASgDEg4KBndlaWdodBgJIAEoBRIOCgZhY3Rpb24YCiABKAkSDAoEcG9vbBgLIAEoBRIOCgZpZF9zdHIYDCABKAkSDAoEYXR0chgNIAEoBWIGcHJvdG8z");
 
 /**
  * @generated from message DanmakuSegment
@@ -44,9 +44,9 @@ export type DanmakuElem = Message<"DanmakuElem"> & {
   progress: number;
 
   /**
-   * @generated from field: int32 mode = 3;
+   * @generated from field: int32 position = 3;
    */
-  mode: number;
+  position: number;
 
   /**
    * @generated from field: int32 fontsize = 4;

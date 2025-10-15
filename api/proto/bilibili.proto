@@ -7,7 +7,7 @@ message DanmakuSegment {
 message DanmakuElem {
   int64 id = 1;
   int32 progress = 2;
-  int32 mode = 3;
+  int32 position = 3;
   int32 fontsize = 4;
   uint32 color = 5;
   string mid_hash = 6;
