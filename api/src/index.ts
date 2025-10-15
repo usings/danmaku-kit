@@ -9,9 +9,11 @@ api
   .use(logger())
   .use(timeout(60 * 1000))
 
-api.get('/search/:category', async (c) => {
+api.get('/search/:category?', async (c) => {
   const category = c.req.param('category')
-  const filteredProviders = providers.filter(provider => provider.categories.includes(category as any))
+  const filteredProviders = category
+    ? providers.filter(provider => provider.categories.includes(category as any))
+    : providers
   if (filteredProviders.length === 0) {
     return c.json({
       success: false,
