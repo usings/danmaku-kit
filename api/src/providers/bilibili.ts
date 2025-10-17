@@ -1,4 +1,4 @@
-import type { DanmakuElem, DanmakuSegment } from '../protobufs/bilibili_pb'
+import type { DanmakuElem as BilibiliDanmaku } from '../protobufs/bilibili_pb'
 import type { Danmaku, DanmakuProvider, UnifiedMedia } from './types'
 import { fromBinary } from '@bufbuild/protobuf'
 import { ofetch } from 'ofetch'
@@ -79,7 +79,6 @@ export class Bilibili implements DanmakuProvider {
     return buffers
       .filter((buffer): buffer is ArrayBuffer => !!buffer)
       .flatMap(buffer => this.parseDanmakuProtobuf(buffer)
-        .elems
         .filter(elem => elem.content)
         .map(elem => ({
           text: elem.content,
@@ -112,15 +111,15 @@ export class Bilibili implements DanmakuProvider {
    * Parse Protobuf binary data of Bilibili danmaku.
    * @private
    */
-  private parseDanmakuProtobuf(buffer: ArrayBuffer): DanmakuSegment {
-    return fromBinary(DanmakuSegmentSchema, new Uint8Array(buffer))
+  private parseDanmakuProtobuf(buffer: ArrayBuffer): BilibiliDanmaku[] {
+    return fromBinary(DanmakuSegmentSchema, new Uint8Array(buffer)).elems
   }
 
   /**
    * Format danmaku (bullet comment) metadata into a CSV-style string.
    * @private
    */
-  private formatDanmakuMeta(danmaku: DanmakuElem): string {
+  private formatDanmakuMeta(danmaku: BilibiliDanmaku): string {
     function mapPosition(pos: number): number {
       switch (pos) {
         case 4: {
