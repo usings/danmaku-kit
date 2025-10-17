@@ -98,16 +98,26 @@ export interface UnifiedMedia {
   /**
    * The key identifying the provider or platform that supplies this media.
    *
-   * @example "bilibili"
+   * @example "bahamut"
    */
   provider: string
 
   /**
    * The display name of the media work, as shown on the provider platform.
    *
-   * @example "SPY×FAMILY 间谍过家家"
+   * @example "SPY×FAMILY 間諜家家酒"
    */
   title: string
+
+  /**
+   * The URL of the cover image representing this media work.
+   *
+   * This image is typically used as a thumbnail or poster on the provider platform,
+   * and serves as the visual identity of the content — the first impression a viewer sees.
+   *
+   * @example "https://p2.bahamut.com.tw/B/ACG/c/96/0000120396.JPG"
+   */
+  cover: string
 
   /**
    * List of episodes if the media work consists of multiple parts.
@@ -126,7 +136,7 @@ interface Episode {
    * The unique identifier of this episode on the provider platform.
    * Typically used to fetch metadata or danmaku (comments).
    *
-   * @example "785548"
+   * @example "28889"
    */
   id: string
 

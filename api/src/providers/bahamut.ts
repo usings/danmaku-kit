@@ -54,8 +54,9 @@ export class Bahamut implements DanmakuProvider {
     }
 
     return searchResults.map((item, index) => ({
-      title: item.title,
       provider: this.name,
+      title: item.title,
+      cover: item.cover,
       episodes: extractEpisodes(seriesDetails[index])?.map(ep => ({
         id: String(ep.videoSn),
         title: `第 ${ep.episode} 集`,
