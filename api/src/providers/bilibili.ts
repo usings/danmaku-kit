@@ -120,23 +120,14 @@ export class Bilibili implements DanmakuProvider {
    * @private
    */
   private formatDanmakuMeta(danmaku: BilibiliDanmaku): string {
-    function mapPosition(pos: number): number {
-      switch (pos) {
-        case 4: {
-          return 4
-        }
-        case 5: {
-          return 5
-        }
-        default: {
-          return 1
-        }
-      }
+    const positions: Record<number, number> = {
+      4: 4,
+      5: 5,
     }
 
     return [
       (danmaku.progress / 1000).toFixed(2),
-      mapPosition(danmaku.position),
+      positions[danmaku.position] || 1,
       danmaku.color,
       danmaku.id,
     ].join(',')

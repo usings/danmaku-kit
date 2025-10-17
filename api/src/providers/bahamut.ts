@@ -10,14 +10,14 @@ export class Bahamut implements DanmakuProvider {
   public readonly name = 'bahamut'
   /** Categories this provider belongs to */
   public readonly categories = ['anime'] as const
-  /** HTTP request headers to simulate browser and pass cookies */
+  /** HTTP request headers to simulate browser */
   private readonly headers: Headers
   /** Maximum concurrency for requests */
   private readonly concurrency = 3
 
   constructor() {
     this.headers = new Headers({
-      userAgent: 'Anime/2.29.2 (tw.com.gamer.anime; build:999; iOS 26.0.0)',
+      'User-Agent': 'Anime/2.29.2 (tw.com.gamer.anime; build:999; iOS 26.0.0)',
     })
   }
 
@@ -89,23 +89,14 @@ export class Bahamut implements DanmakuProvider {
    * @private
    */
   private formatDanmakuMeta(danmaku: BahamutDanmaku): string {
-    function mapPosition(pos: number): number {
-      switch (pos) {
-        case 1: {
-          return 5
-        }
-        case 2: {
-          return 4
-        }
-        default: {
-          return 1
-        }
-      }
+    const positions: Record<number, number> = {
+      1: 5,
+      2: 4,
     }
 
     return [
-      danmaku.time.toFixed(2),
-      mapPosition(danmaku.position),
+      Number(danmaku.time / 10).toFixed(2),
+      positions[danmaku.position] || 1,
       Number.parseInt(danmaku.color.slice(1), 16),
       danmaku.userid,
     ].join(',')
