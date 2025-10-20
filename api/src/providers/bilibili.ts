@@ -2,7 +2,7 @@ import type { DanmakuElem as BilibiliDanmaku } from '../protobufs/bilibili_pb'
 import type { Danmaku, DanmakuProvider, UnifiedMedia } from './types'
 import { fromBinary } from '@bufbuild/protobuf'
 import { ofetch } from 'ofetch'
-import { parallel } from 'radashi'
+import { isEmpty, parallel } from 'radashi'
 import { DanmakuSegmentSchema } from '../protobufs/bilibili_pb'
 
 /**
@@ -78,7 +78,7 @@ export class Bilibili implements DanmakuProvider {
     )
 
     return buffers
-      .filter((buffer): buffer is ArrayBuffer => !!buffer)
+      .filter((buffer): buffer is ArrayBuffer => !isEmpty(buffer))
       .flatMap(buffer => this.parseDanmakuProtobuf(buffer)
         .filter(elem => elem.content)
         .map(elem => ({
